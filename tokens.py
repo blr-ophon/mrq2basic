@@ -9,8 +9,7 @@ class TokenType(Enum):
     # MULTIPLY    =   3
     # DIVIDE      =   4
     OPERATOR    =   1
-    LPAREN      =   2
-    RPAREN      =   3 
+    PAREN      =   2
 
 
 @dataclass
