@@ -3,7 +3,8 @@ import pdb
 
 WHITESPACE = " \n\t"
 DIGITS = ".0123456789"
-OPERATORS = "=+-*/"
+OPERATORS_1 = "+-"
+OPERATORS_2 = "*/"
 PARENTHESIS = "()"
 
 
@@ -11,8 +12,10 @@ class Lexer:
     """Parse math operation strings"""
 
     def __init__(self, text):
-        self.text = iter(text)
-        self.advance()  # Get first char
+        self.text = iter(text)      # Text Iterator
+        self.current_char = None
+        # Get first char
+        self.advance()
 
     def advance(self):
         """Save current char and advance iterator to next one"""
@@ -32,13 +35,18 @@ class Lexer:
             elif self.current_char in DIGITS:
                 yield self.generate_number()
 
-            elif self.current_char in OPERATORS:
-                op_token = Token(TokenType.OPERATOR, self.current_char)
+            elif self.current_char in OPERATORS_1:
+                op_token = Token(TokenType.OPERATOR, self.current_char, preced=1)
+                self.advance()
+                yield op_token
+
+            elif self.current_char in OPERATORS_2:
+                op_token = Token(TokenType.OPERATOR, self.current_char, preced=2)
                 self.advance()
                 yield op_token
 
             elif self.current_char in PARENTHESIS:
-                op_token = Token(TokenType.PAREN, self.current_char)
+                op_token = Token(TokenType.PAREN, self.current_char, preced=3)
                 self.advance()
                 yield op_token
 

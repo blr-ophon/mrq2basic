@@ -1,8 +1,13 @@
 from lexer import Lexer
+from parsing import Parser
 import pdb
 
 while True:
     text = input(">> ")
     lexer = Lexer(text)
-    tokens = lexer.generate_tokens()
-    print(list(tokens))
+    tokens = list(lexer.generate_tokens())
+
+    print(tokens)
+
+    parser = Parser(list(tokens))
+    parser.parse()
