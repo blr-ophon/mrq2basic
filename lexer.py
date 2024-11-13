@@ -45,7 +45,7 @@ class Lexer:
                 yield op_token
 
             elif self.current_char == "(":
-                op_token = Token(TokenType.LPAREN, self.current_char, preced=3)
+                op_token = Token(TokenType.LPAREN, self.current_char, preced=0)
                 self.advance()
                 yield op_token
 

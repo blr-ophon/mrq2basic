@@ -18,6 +18,7 @@ class Token:
     preced: int = 0     # Precedence
 
     def __repr__(self):
+        return str(self.value)
         s = ""
         if self.value is not None:
             s += f"({self.type.name}"

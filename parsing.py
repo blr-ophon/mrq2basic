@@ -1,6 +1,7 @@
 from collections import deque
 from tokens import TokenType
-from nodes import NumberNode, OperationNode
+from nodes import ASTNode
+
 
 class Parser:
     """Parse tokens into nodes"""
@@ -27,10 +28,18 @@ class Parser:
         return opStack[-1].preced
 
     def parse(self):
+        """Parse by Shunting Yard algorithm to Abstract Syntax Tree"""
+
+        postFix = self.toPostfix()
+        print(postFix)
+        ASTRoot = self.toASTree(postFix)
+        return ASTRoot
+
+    def toPostfix(self):
+        """Convert tokens to postFix order"""
         # breakpoint()
-        """Parse expression by Shunting Yard algorithm"""
         opStack = deque()       # Stack of operation tokens
-        postFix = deque()       # Tokens in postfix order 
+        postFix = deque()       # Tokens in postfix order
 
         while self.crntToken is not None:
 
@@ -62,4 +71,36 @@ class Parser:
         while len(opStack) > 0:
             postFix.append(opStack.pop())
 
-        print(postFix)
+        return postFix
+
+    def parseASTNodes(self, postFixTokens, parentNode):
+        """Parse nodes to AST recursively"""
+
+        if not postFixTokens:
+            return
+
+        rToken = postFixTokens.pop()
+        rNode = ASTNode(rToken)
+        if rToken.type == TokenType.OPERATOR:
+            self.parseASTNodes(postFixTokens, rNode)
+
+        lToken = postFixTokens.pop()
+        lNode = ASTNode(lToken)
+        if lToken.type == TokenType.OPERATOR:
+            self.parseASTNodes(postFixTokens, lNode)
+
+        parentNode.rChild = rNode
+        parentNode.lChild = lNode
+
+    def toASTree(self, postFixTokens):
+        """Postfix notation to Abstract Syntax Tree"""
+
+        if not postFixTokens:
+            return None
+
+        topToken = postFixTokens.pop()
+        rootNode = ASTNode(topToken)
+        if topToken.type == TokenType.OPERATOR:
+            self.parseASTNodes(postFixTokens, rootNode)
+
+        return rootNode
