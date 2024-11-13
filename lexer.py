@@ -5,7 +5,6 @@ WHITESPACE = " \n\t"
 DIGITS = ".0123456789"
 OPERATORS_1 = "+-"
 OPERATORS_2 = "*/"
-PARENTHESIS = "()"
 
 
 class Lexer:
@@ -45,8 +44,13 @@ class Lexer:
                 self.advance()
                 yield op_token
 
-            elif self.current_char in PARENTHESIS:
-                op_token = Token(TokenType.PAREN, self.current_char, preced=3)
+            elif self.current_char == "(":
+                op_token = Token(TokenType.LPAREN, self.current_char, preced=3)
+                self.advance()
+                yield op_token
+
+            elif self.current_char == ")":
+                op_token = Token(TokenType.RPAREN, self.current_char, preced=3)
                 self.advance()
                 yield op_token
 

@@ -41,10 +41,21 @@ class Parser:
                 topPreced = self.getTopPreced(opStack)
                 while topPreced > self.crntToken.preced:
                     topToken = opStack.pop()
-                    postFix.append(topToken)
+                    if topToken.type != TokenType.LPAREN:
+                        postFix.append(topToken)
                     topPreced = self.getTopPreced(opStack)
 
                 opStack.append(self.crntToken)
+
+            elif self.crntToken.type == TokenType.LPAREN:
+                opStack.append(self.crntToken)
+
+            elif self.crntToken.type == TokenType.RPAREN:
+                top_item = opStack.pop() if opStack else None
+                # Pop from stack to output until left parenthesis is found
+                while top_item and top_item.type != TokenType.LPAREN:
+                    postFix.append(top_item)
+                    top_item = opStack.pop() if opStack else None
 
             self.advance()
 

@@ -6,7 +6,8 @@ class TokenType(Enum):
     """Enumeration of Symbol types"""
     NUMBER      =   0
     OPERATOR    =   1
-    PAREN       =   2
+    LPAREN      =   2
+    RPAREN      =   3
 
 
 @dataclass
