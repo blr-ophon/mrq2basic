@@ -4,16 +4,20 @@ import pdb
 WHITESPACE = " \n\t"
 DIGITS = ".0123456789"
 OPERATORS = "-+*/%"
-MAX_PRECED = 9
+# Special Case. Behave as unary or binary depending on the expression
+SC_OPERATORS = "-+"
 
 opSymbolTable = {
     "+": (TokenType.OP_ADD, 1),
-    "-": (TokenType.OP_SUBTRACT, 1),
+    "-": (TokenType.OP_MINUS, 1),
     "*": (TokenType.OP_MULTIPLY, 2),
     "/": (TokenType.OP_DIVIDE, 2),
     "%": (TokenType.OP_MODULUS, 2),
+    # Unitary operators
+    "u+": (TokenType.OP_UN_ADD, 3),
+    "u-": (TokenType.OP_UN_MINUS, 3),
 }
-
+MAX_PRECED = 9
 
 
 class Lexer:
@@ -34,6 +38,10 @@ class Lexer:
         except StopIteration:
             self.current_char = None
 
+    def isOperator(self, opString):
+        """Check if opString is an operator in the symbol table"""
+        return opSymbolTable.get(opString, (None, None))
+
     def generate_tokens(self):
         """Yield a generator with numbers and operators tokens"""
         while self.current_char is not None:
@@ -46,10 +54,10 @@ class Lexer:
                 yield self.generate_number()
             # TODO: Create generate_operator() method for symbols like ++ and --
 
-            # Special Case. '-' represents 2 operations. This is unary case
-            elif self.current_char == "-" and self.previous_char in OPERATORS:
-                tokenType = TokenType.OP_NEG
-                op_token = Token(tokenType, "neg", MAX_PRECED, True, 1)
+            elif self.current_char in SC_OPERATORS and self.previous_char in OPERATORS:
+                tokenVal = "u" + self.current_char
+                tokenType, tokenPreced = opSymbolTable.get(tokenVal, (None, None))
+                op_token = Token(tokenType, tokenVal, tokenPreced, True, 1)
                 self.advance()
                 yield op_token
 

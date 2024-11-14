@@ -10,12 +10,13 @@ class TokenType(Enum):
     RPAREN          = auto()
     # Binary Operators
     OP_ADD          = auto()
-    OP_SUBTRACT     = auto()
+    OP_MINUS        = auto()
     OP_MULTIPLY     = auto()
     OP_DIVIDE       = auto()
     OP_MODULUS      = auto()
     # Unary Operators
-    OP_NEG          = auto()
+    OP_UN_ADD       = auto()
+    OP_UN_MINUS     = auto()
 
 
 
