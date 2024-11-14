@@ -14,9 +14,12 @@ class TokenType(Enum):
     OP_MULTIPLY     = auto()
     OP_DIVIDE       = auto()
     OP_MODULUS      = auto()
+    OP_AND          = auto()
+    OP_OR           = auto()
     # Unary Operators
     OP_UN_ADD       = auto()
     OP_UN_MINUS     = auto()
+    OP_NOT          = auto()
 
 
 
@@ -26,7 +29,7 @@ class Token:
     type: TokenType                 # Symbol inside token
     value: str = ""                 # value (for numbers)
     # For operators
-    preced: int = 0
+    preced: int = 20
     isOperator: bool = False
     operands_n: int = 0
 

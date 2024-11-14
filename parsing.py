@@ -27,8 +27,8 @@ class Parser:
     @staticmethod
     def getTopPreced(opStack):
         """Return precedence of token on top of the operation stack"""
-        if len(opStack) == 0:
-            return 0
+        if not opStack:
+            return None
         return opStack[-1].preced
 
     def toPostfix(self):
@@ -53,8 +53,8 @@ class Parser:
 
             elif self.crntToken.isOperator:
                 topPreced = self.getTopPreced(opStack)
-                while topPreced > self.crntToken.preced:
-                    # Left parenthesis must have lowest precedence for this to work 
+                while topPreced and topPreced < self.crntToken.preced:
+                    # Left parenthesis must have max precedence for this to work 
                     topToken = opStack.pop()
                     if topToken.type != TokenType.LPAREN:
                         postFix.append(topToken)

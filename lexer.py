@@ -1,11 +1,13 @@
 from tokens import Token, TokenType
 import pdb
 
+# TODO: Accept multiple char operators
+
 WHITESPACE = " \n\t"
 DIGITS = ".0123456789"
 # Special Case. Behave as unary or binary depending on the expression
 SC_OPERATORS = "-+"
-MAX_PRECED = 9
+MAX_PRECED = 15
 
 
 class Lexer:
@@ -13,14 +15,19 @@ class Lexer:
 
     opSymbolTable = {
         # (Type, precedence, number of operands)
-        "+": (TokenType.OP_ADD, 1, 2),
-        "-": (TokenType.OP_MINUS, 1, 2),
-        "*": (TokenType.OP_MULTIPLY, 2, 2),
-        "/": (TokenType.OP_DIVIDE, 2, 2),
-        "%": (TokenType.OP_MODULUS, 2, 2),
+
+        # Binary operators
+        "*": (TokenType.OP_MULTIPLY, 3, 2),
+        "/": (TokenType.OP_DIVIDE, 3, 2),
+        "%": (TokenType.OP_MODULUS, 3, 2),
+        "+": (TokenType.OP_ADD, 4, 2),
+        "-": (TokenType.OP_MINUS, 4, 2),
+        "&": (TokenType.OP_AND, 8, 2),
+        "|": (TokenType.OP_OR, 9, 2),
         # Unitary operators
         "u+": (TokenType.OP_UN_ADD, 3, 1),
         "u-": (TokenType.OP_UN_MINUS, 3, 1),
+        "!": (TokenType.OP_NOT, 2, 1),
     }
 
     def __init__(self, text: str):
@@ -82,12 +89,12 @@ class Lexer:
                 yield op_token
 
             elif self.current_char == "(":
-                op_token = Token(TokenType.LPAREN, self.current_char, preced=0)
+                op_token = Token(TokenType.LPAREN, self.current_char, preced=MAX_PRECED)
                 self.advance()
                 yield op_token
 
             elif self.current_char == ")":
-                op_token = Token(TokenType.RPAREN, self.current_char, MAX_PRECED)
+                op_token = Token(TokenType.RPAREN, self.current_char, 0)
                 self.advance()
                 yield op_token
 
