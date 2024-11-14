@@ -10,8 +10,12 @@ class Parser:
         self.crntToken = None
         self.advance()
 
-    def raise_error(self):
-        raise Exception("Invalid Syntax")
+    def parse(self):
+        """Parse infix tokens to Abstract Syntax Tree"""
+        postFix = self.toPostfix()
+        print(postFix)
+        ASTRoot = self.toASTree(postFix)
+        return ASTRoot
 
     def advance(self):
         """Get next token"""
@@ -27,17 +31,8 @@ class Parser:
             return 0
         return opStack[-1].preced
 
-    def parse(self):
-        """Parse by Shunting Yard algorithm to Abstract Syntax Tree"""
-
-        postFix = self.toPostfix()
-        print(postFix)
-        ASTRoot = self.toASTree(postFix)
-        return ASTRoot
-
     def toPostfix(self):
-        """Convert tokens to postFix order"""
-        # breakpoint()
+        """Convert infix tokens to postfix order by Shunting Yard Algorithm"""
         opStack = deque()       # Stack of operation tokens
         postFix = deque()       # Tokens in postfix order
 
@@ -45,16 +40,6 @@ class Parser:
 
             if self.crntToken.type == TokenType.NUMBER:
                 postFix.append(self.crntToken)
-
-            elif self.crntToken.type == TokenType.OPERATOR:
-                topPreced = self.getTopPreced(opStack)
-                while topPreced > self.crntToken.preced:
-                    topToken = opStack.pop()
-                    if topToken.type != TokenType.LPAREN:
-                        postFix.append(topToken)
-                    topPreced = self.getTopPreced(opStack)
-
-                opStack.append(self.crntToken)
 
             elif self.crntToken.type == TokenType.LPAREN:
                 opStack.append(self.crntToken)
@@ -65,6 +50,17 @@ class Parser:
                 while top_item and top_item.type != TokenType.LPAREN:
                     postFix.append(top_item)
                     top_item = opStack.pop() if opStack else None
+
+            elif self.crntToken.isOperator:
+                topPreced = self.getTopPreced(opStack)
+                while topPreced > self.crntToken.preced:
+                    # Left parenthesis must have lowest precedence for this to work 
+                    topToken = opStack.pop()
+                    if topToken.type != TokenType.LPAREN:
+                        postFix.append(topToken)
+                    topPreced = self.getTopPreced(opStack)
+
+                opStack.append(self.crntToken)
 
             self.advance()
 
@@ -79,18 +75,27 @@ class Parser:
         if not postFixTokens:
             return
 
+        # Right child
         rToken = postFixTokens.pop()
         rNode = ASTNode(rToken)
-        if rToken.type == TokenType.OPERATOR:
+        if rToken.isOperator:
             self.parseASTNodes(postFixTokens, rNode)
+        parentNode.rChild = rNode
 
+        if not postFixTokens:
+            self.raise_error()
+            return
+        if parentNode.Token.operands_n < 2:
+            # Parent node has only one child. Right one
+            return
+
+        # Left child
         lToken = postFixTokens.pop()
         lNode = ASTNode(lToken)
-        if lToken.type == TokenType.OPERATOR:
+        if lToken.isOperator:
             self.parseASTNodes(postFixTokens, lNode)
-
-        parentNode.rChild = rNode
         parentNode.lChild = lNode
+
 
     def toASTree(self, postFixTokens):
         """Postfix notation to Abstract Syntax Tree"""
@@ -100,7 +105,11 @@ class Parser:
 
         topToken = postFixTokens.pop()
         rootNode = ASTNode(topToken)
-        if topToken.type == TokenType.OPERATOR:
+        if topToken.isOperator:
             self.parseASTNodes(postFixTokens, rootNode)
 
         return rootNode
+
+    def raise_error(self):
+        """Generic error handling"""
+        raise Exception("Invalid Syntax")
