@@ -3,25 +3,25 @@ import pdb
 
 WHITESPACE = " \n\t"
 DIGITS = ".0123456789"
-OPERATORS = "-+*/%"
 # Special Case. Behave as unary or binary depending on the expression
 SC_OPERATORS = "-+"
-
-opSymbolTable = {
-    "+": (TokenType.OP_ADD, 1),
-    "-": (TokenType.OP_MINUS, 1),
-    "*": (TokenType.OP_MULTIPLY, 2),
-    "/": (TokenType.OP_DIVIDE, 2),
-    "%": (TokenType.OP_MODULUS, 2),
-    # Unitary operators
-    "u+": (TokenType.OP_UN_ADD, 3),
-    "u-": (TokenType.OP_UN_MINUS, 3),
-}
 MAX_PRECED = 9
 
 
 class Lexer:
     """Parse math operation strings"""
+
+    opSymbolTable = {
+        # (Type, precedence, number of operands)
+        "+": (TokenType.OP_ADD, 1, 2),
+        "-": (TokenType.OP_MINUS, 1, 2),
+        "*": (TokenType.OP_MULTIPLY, 2, 2),
+        "/": (TokenType.OP_DIVIDE, 2, 2),
+        "%": (TokenType.OP_MODULUS, 2, 2),
+        # Unitary operators
+        "u+": (TokenType.OP_UN_ADD, 3, 1),
+        "u-": (TokenType.OP_UN_MINUS, 3, 1),
+    }
 
     def __init__(self, text: str):
         self.text = iter(text)      # Text Iterator
@@ -38,9 +38,22 @@ class Lexer:
         except StopIteration:
             self.current_char = None
 
-    def isOperator(self, opString):
+    def symbolToToken(self, key):
+        """If key is in the Symbol table, returns a token, else returns None"""
+        (opType, opPreced, opOperands) = self.opSymbolTable.get(key, (None, None, None))
+        if opType is None:
+            # Not a Symbol
+            return None
+
+        op_token = Token(opType, key, opPreced, True, opOperands)
+        return op_token
+
+    def isOperator(self, key):
         """Check if opString is an operator in the symbol table"""
-        return opSymbolTable.get(opString, (None, None))
+        # For code clarity
+        if self.symbolToToken(key):
+            return True
+        return False
 
     def generate_tokens(self):
         """Yield a generator with numbers and operators tokens"""
@@ -54,16 +67,17 @@ class Lexer:
                 yield self.generate_number()
             # TODO: Create generate_operator() method for symbols like ++ and --
 
-            elif self.current_char in SC_OPERATORS and self.previous_char in OPERATORS:
-                tokenVal = "u" + self.current_char
-                tokenType, tokenPreced = opSymbolTable.get(tokenVal, (None, None))
-                op_token = Token(tokenType, tokenVal, tokenPreced, True, 1)
+            # Special case operators. Behave as unary or binary depending on
+            # the expression. For these, unary case has higher precedence, so
+            # must be checked first. The unary case is identified in the symbol
+            # table by prepending 'u'
+            elif self.current_char in SC_OPERATORS and self.isOperator(self.previous_char):
+                op_token = self.symbolToToken("u"+self.current_char)
                 self.advance()
                 yield op_token
 
-            elif self.current_char in OPERATORS:
-                tokenType, tokenPreced = opSymbolTable.get(self.current_char, (None, None))
-                op_token = Token(tokenType, self.current_char, tokenPreced, True, 2)
+            elif self.isOperator(self.current_char):
+                op_token = self.symbolToToken(self.current_char)
                 self.advance()
                 yield op_token
 
